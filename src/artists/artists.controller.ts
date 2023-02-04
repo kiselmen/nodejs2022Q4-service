@@ -72,8 +72,11 @@ export class ArtistsController {
     status: HttpStatus.NOT_FOUND,
     description: 'Artist not found',
   })
-  update(@Param('id') id: string, @Body() updateArtistDto: UpdateArtistDto) {
-    return this.artistsService.update(id, updateArtistDto);
+  updateArtist(
+    @Param('id') id: string,
+    @Body() updateArtistDto: UpdateArtistDto,
+  ) {
+    return this.artistsService.updateArtist(id, updateArtistDto);
   }
 
   @Delete(':id')
@@ -89,7 +92,7 @@ export class ArtistsController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Bad request. Invalid artistId (not uuid)',
   })
-  remove(@Param('id') id: string) {
-    return this.artistsService.remove(id);
+  removeArtist(@Param('id') id: string) {
+    return this.artistsService.removeArtist(id);
   }
 }

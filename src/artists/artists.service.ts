@@ -40,7 +40,7 @@ export class ArtistsService {
     return artist;
   }
 
-  async update(id: string, updateArtistDto: UpdateArtistDto) {
+  async updateArtist(id: string, updateArtistDto: UpdateArtistDto) {
     if (updateArtistDto.name === '') {
       throw new HttpException(
         'Bad request. Miss required fields',
@@ -63,7 +63,7 @@ export class ArtistsService {
     return artist;
   }
 
-  async remove(id: string) {
+  async removeArtist(id: string) {
     if (!idValidate(id)) {
       throw new HttpException(
         'Bad request. Invalid artistId (not uuid)',
