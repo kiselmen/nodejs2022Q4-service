@@ -4,13 +4,21 @@ import { UpdateArtistDto } from './dto/update.dto';
 import { Artist } from './artist';
 import { v4 as idv4 } from 'uuid';
 import { validate as idValidate } from 'uuid';
+import { AlbumsService } from 'src/albums/albums.service';
+import { TracksService } from 'src/tracks/tracks.service';
 
 @Injectable()
 export class ArtistsService {
   public artistsDB: Artist[] = [];
 
+  constructor(
+    private readonly albums: AlbumsService,
+    private readonly tracks: TracksService,
+  ) {}
+
   async getAllArtists() {
-    return this.artistsDB;
+    return this.albums.getAllAlbums();
+    // return this.artistsDB;
   }
 
   async getArtistByID(id: string) {
@@ -63,7 +71,7 @@ export class ArtistsService {
     return artist;
   }
 
-  async removeArtist(id: string) {
+  async deleteArtist(id: string) {
     if (!idValidate(id)) {
       throw new HttpException(
         'Bad request. Invalid artistId (not uuid)',

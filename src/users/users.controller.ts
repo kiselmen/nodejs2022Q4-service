@@ -3,7 +3,7 @@ import {
   Get,
   Post,
   Body,
-  Patch,
+  Put,
   Param,
   Delete,
   HttpStatus,
@@ -60,7 +60,7 @@ export class UsersController {
     return this.usersService.createUser(userData);
   }
 
-  @Patch(':id')
+  @Put(':id')
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiOperation({ summary: `Update a user's password` })
   @ApiResponse({

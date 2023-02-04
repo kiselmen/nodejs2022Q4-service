@@ -3,7 +3,7 @@ import {
   Get,
   Post,
   Body,
-  Patch,
+  Put,
   Param,
   Delete,
   HttpStatus,
@@ -61,7 +61,7 @@ export class ArtistsController {
     return this.artistsService.createArtist(createArtistDto);
   }
 
-  @Patch(':id')
+  @Put(':id')
   @ApiParam({ name: 'id', description: 'Artist ID' })
   @ApiOperation({ summary: `Update a artist's data` })
   @ApiResponse({
@@ -92,7 +92,7 @@ export class ArtistsController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Bad request. Invalid artistId (not uuid)',
   })
-  removeArtist(@Param('id') id: string) {
-    return this.artistsService.removeArtist(id);
+  deleteArtist(@Param('id') id: string) {
+    return this.artistsService.deleteArtist(id);
   }
 }
