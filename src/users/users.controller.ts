@@ -20,7 +20,6 @@ import { User } from './user';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Get()
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({
     status: HttpStatus.OK,
