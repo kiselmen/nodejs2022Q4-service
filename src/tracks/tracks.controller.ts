@@ -25,8 +25,7 @@ export class TracksController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Successful operation',
-    type: Track,
-    isArray: true,
+    type: [Track],
   })
   getAllTracks() {
     return this.trackService.getAllTracks();

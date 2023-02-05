@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { CreateArtistDto } from './dto/create.dto';
 import { UpdateArtistDto } from './dto/update.dto';
 import { Artist } from './artist';
@@ -6,22 +12,26 @@ import { v4 as idv4 } from 'uuid';
 import { validate as idValidate } from 'uuid';
 import { AlbumsService } from 'src/albums/albums.service';
 import { TracksService } from 'src/tracks/tracks.service';
+import { FavoritesService } from 'src/favorites/favorites.service';
 
 @Injectable()
 export class ArtistsService {
   public artistsDB: Artist[] = [];
 
   constructor(
+    @Inject(forwardRef(() => AlbumsService))
     private readonly albums: AlbumsService,
+    @Inject(forwardRef(() => TracksService))
     private readonly tracks: TracksService,
+    @Inject(forwardRef(() => FavoritesService))
+    private readonly favorites: FavoritesService,
   ) {}
 
-  async getAllArtists() {
-    return this.albums.getAllAlbums();
-    // return this.artistsDB;
+  getAllArtists() {
+    return this.artistsDB;
   }
 
-  async getArtistByID(id: string) {
+  getArtistByID(id: string) {
     if (!idValidate(id)) {
       throw new HttpException(
         'Bad request. Invalid artistId (not uuid)',
@@ -35,7 +45,7 @@ export class ArtistsService {
     return isArtist[0];
   }
 
-  async createArtist(createArtistDto: CreateArtistDto) {
+  createArtist(createArtistDto: CreateArtistDto) {
     if (createArtistDto.name === '') {
       throw new HttpException(
         'Bad request. Miss required fields',
@@ -48,8 +58,8 @@ export class ArtistsService {
     return artist;
   }
 
-  async updateArtist(id: string, updateArtistDto: UpdateArtistDto) {
-    if (updateArtistDto.name === '') {
+  updateArtist(id: string, updateArtistDto: UpdateArtistDto) {
+    if (!updateArtistDto.name || typeof updateArtistDto.name !== 'string') {
       throw new HttpException(
         'Bad request. Miss required fields',
         HttpStatus.BAD_REQUEST,
@@ -57,7 +67,7 @@ export class ArtistsService {
     }
     if (!idValidate(id)) {
       throw new HttpException(
-        'Bad request. Invalid artistId (not uuid)',
+        'Bad request. Invalid artistId or albumId (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -71,17 +81,20 @@ export class ArtistsService {
     return artist;
   }
 
-  async deleteArtist(id: string) {
+  deleteArtist(id: string) {
     if (!idValidate(id)) {
       throw new HttpException(
         'Bad request. Invalid artistId (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
     }
-    const isArtist = this.artistsDB.filter((item) => item.id === id);
-    if (!isArtist.length) {
+    const artist = this.artistsDB.filter((item) => item.id === id);
+    if (!artist.length) {
       throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
     }
+    this.favorites.deleteArtistFromFavorites(id);
     this.artistsDB = this.artistsDB.filter((item) => item.id !== id);
+    this.tracks.updateTracksArtist(id);
+    this.albums.updateAlbumsArtist(id);
   }
 }

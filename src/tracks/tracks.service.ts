@@ -1,34 +1,46 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { CreateTrackDto } from './dto/create.dto';
 import { UpdateTrackDto } from './dto/update.dto';
 import { Track } from './track';
 import { v4 as idv4 } from 'uuid';
 import { validate as idValidate } from 'uuid';
+import { FavoritesService } from 'src/favorites/favorites.service';
 
 @Injectable()
 export class TracksService {
-  public trackDB: Track[] = [];
+  public tracksDB: Track[] = [];
 
-  async getAllTracks() {
-    return this.trackDB;
+  constructor(
+    @Inject(forwardRef(() => FavoritesService))
+    private readonly favorites: FavoritesService,
+  ) {}
+
+  getAllTracks() {
+    return this.tracksDB;
   }
 
-  async getTrackByID(id: string) {
+  getTrackByID(id: string) {
     if (!idValidate(id)) {
       throw new HttpException(
         'Bad request. Invalid trackId (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
     }
-    const isTrack = this.trackDB.filter((item) => item.id === id);
+    const isTrack = this.tracksDB.filter((item) => item.id === id);
     if (!isTrack.length) {
       throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
     }
     return isTrack[0];
   }
 
-  async createTrack(createTrackDto: CreateTrackDto) {
-    if (createTrackDto.name === '') {
+  createTrack(createTrackDto: CreateTrackDto) {
+    if (!createTrackDto.name) {
       throw new HttpException(
         'Bad request. Miss required fields',
         HttpStatus.BAD_REQUEST,
@@ -42,12 +54,12 @@ export class TracksService {
       createTrackDto.albumId,
       createTrackDto.duration,
     );
-    this.trackDB.push(track);
+    this.tracksDB.push(track);
     return track;
   }
 
-  async updateTrack(id: string, updateTrackDto: UpdateTrackDto) {
-    if (updateTrackDto.name === '') {
+  updateTrack(id: string, updateTrackDto: UpdateTrackDto) {
+    if (!updateTrackDto.name) {
       throw new HttpException(
         'Bad request. Miss required fields',
         HttpStatus.BAD_REQUEST,
@@ -59,7 +71,7 @@ export class TracksService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const isTrack = this.trackDB.filter((item) => item.id === id);
+    const isTrack = this.tracksDB.filter((item) => item.id === id);
     if (!isTrack.length) {
       throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
     }
@@ -71,17 +83,30 @@ export class TracksService {
     return track;
   }
 
-  async deleteTrack(id: string) {
+  deleteTrack(id: string) {
     if (!idValidate(id)) {
       throw new HttpException(
         'Bad request. Invalid trackId (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
     }
-    const isTrack = this.trackDB.filter((item) => item.id === id);
+    const isTrack = this.tracksDB.filter((item) => item.id === id);
     if (!isTrack.length) {
       throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
     }
-    this.trackDB = this.trackDB.filter((item) => item.id !== id);
+    this.favorites.deleteTrackFromFavorites(id);
+    this.tracksDB = this.tracksDB.filter((item) => item.id !== id);
+  }
+
+  updateTracksArtist(id: string) {
+    this.tracksDB.forEach((item) => {
+      if (item.artistId === id) item.artistId = null;
+    });
+  }
+
+  updateTracksAlbum(id: string) {
+    this.tracksDB.forEach((item) => {
+      if (item.albumId === id) item.albumId = null;
+    });
   }
 }

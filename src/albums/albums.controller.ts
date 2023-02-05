@@ -25,8 +25,7 @@ export class AlbumsController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Successful operation',
-    type: Album,
-    isArray: true,
+    type: [Album],
   })
   getAllAlbums() {
     return this.albumService.getAllAlbums();
@@ -42,7 +41,7 @@ export class AlbumsController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'Bad request. albumId is invalid (not uuid)',
+    description: 'Bad request. Invalid albumsId (not uuid)',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -56,7 +55,7 @@ export class AlbumsController {
   @ApiOperation({ summary: 'Create album' })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'Bad request. body does not contain required fields',
+    description: 'Bad request. Miss required fields',
   })
   createAlbum(@Body() createAlbumDto: CreateAlbumDto) {
     return this.albumService.createAlbum(createAlbumDto);
@@ -67,7 +66,7 @@ export class AlbumsController {
   @ApiOperation({ summary: `Update a album's information` })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'Bad request. body does not contain required fields',
+    description: 'Bad request. Miss required fields',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
@@ -88,7 +87,7 @@ export class AlbumsController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'Bad request. albumId is invalid (not uuid)',
+    description: 'Bad request. Invalid albumsId (not uuid)',
   })
   deleteAlbum(@Param('id') id: string) {
     return this.albumService.deleteAlbum(id);

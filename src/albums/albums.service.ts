@@ -1,22 +1,37 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { CreateAlbumDto } from './dto/create.dto';
 import { UpdateAlbumDto } from './dto/update.dto';
 import { Album } from './album';
 import { v4 as idv4 } from 'uuid';
 import { validate as idValidate } from 'uuid';
+import { TracksService } from 'src/tracks/tracks.service';
+import { FavoritesService } from 'src/favorites/favorites.service';
 
 @Injectable()
 export class AlbumsService {
   public albumsDB: Album[] = [];
 
-  async getAllAlbums() {
+  constructor(
+    @Inject(forwardRef(() => TracksService))
+    private readonly tracks: TracksService,
+    @Inject(forwardRef(() => FavoritesService))
+    private readonly favorites: FavoritesService,
+  ) {}
+
+  getAllAlbums() {
     return this.albumsDB;
   }
 
-  async getAlbumByID(id: string) {
+  getAlbumByID(id: string) {
     if (!idValidate(id)) {
       throw new HttpException(
-        'Bad request. albumsId is invalid (not uuid)',
+        'Bad request. Invalid albumsId (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -27,10 +42,10 @@ export class AlbumsService {
     return isAlbum[0];
   }
 
-  async createAlbum(createAlbumDto: CreateAlbumDto) {
+  createAlbum(createAlbumDto: CreateAlbumDto) {
     if (createAlbumDto.name === '' || createAlbumDto.year < 1900) {
       throw new HttpException(
-        'Bad request. body does not contain required fields',
+        'Bad request. Miss required fields',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -45,22 +60,28 @@ export class AlbumsService {
     return album;
   }
 
-  async updateAlbum(id: string, updateAlbumDto: UpdateAlbumDto) {
-    if (updateAlbumDto.name === '') {
+  updateAlbum(id: string, updateAlbumDto: UpdateAlbumDto) {
+    if (!updateAlbumDto.name) {
       throw new HttpException(
-        'Bad request. body does not contain required fields',
+        'Bad request. Miss required fields',
         HttpStatus.BAD_REQUEST,
       );
     }
     if (!idValidate(id)) {
       throw new HttpException(
-        'Bad request. albumId is invalid (not uuid)',
+        'Bad request. Invalid albumsId (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
     }
     const isAlbum = this.albumsDB.filter((item) => item.id === id);
     if (!isAlbum.length) {
       throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
+    }
+    if (!idValidate(updateAlbumDto.artistId)) {
+      throw new HttpException(
+        'Bad request. Invalid artistId (not uuid)',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     const album = isAlbum[0];
     album.name = updateAlbumDto.name;
@@ -69,10 +90,10 @@ export class AlbumsService {
     return album;
   }
 
-  async deleteAlbum(id: string) {
+  deleteAlbum(id: string) {
     if (!idValidate(id)) {
       throw new HttpException(
-        'Bad request. AlbumId is invalid (not uuid)',
+        'Bad request. Invalid albumsId (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -80,6 +101,14 @@ export class AlbumsService {
     if (!isAlbum.length) {
       throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
     }
+    this.favorites.deleteAlbumFromFavorites(id);
     this.albumsDB = this.albumsDB.filter((item) => item.id !== id);
+    this.tracks.updateTracksAlbum(id);
+  }
+
+  updateAlbumsArtist(id: string) {
+    this.albumsDB.forEach((item) => {
+      if (item.artistId === id) item.artistId = null;
+    });
   }
 }

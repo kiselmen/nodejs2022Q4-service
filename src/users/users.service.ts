@@ -11,8 +11,10 @@ export class UsersService {
 
   async getAllUsers() {
     const response = [...this.usersDB];
-    response.map((item) => delete item.password);
-    return this.usersDB;
+    response.map((item) => {
+      return delete item.password;
+    });
+    return response;
   }
 
   async getUserByID(id: string) {
@@ -41,6 +43,8 @@ export class UsersService {
     }
     const id = idv4();
     const user = new User(id, createUserDto.login, createUserDto.password);
+    user.createdAt = Number(new Date());
+    user.updatedAt = Number(new Date());
     this.usersDB.push(user);
     const response = { ...user };
     delete response.password;
@@ -55,7 +59,7 @@ export class UsersService {
       );
     }
     const vaildeteRequest =
-      passwordData.oldPassword === '' || passwordData.newPassword === '';
+      !passwordData.oldPassword || !passwordData.newPassword;
     if (vaildeteRequest) {
       throw new HttpException(
         'Bad request. Miss required fields',
@@ -71,7 +75,7 @@ export class UsersService {
       throw new HttpException('oldPassowrd is wrong', HttpStatus.FORBIDDEN);
     }
     user.password = passwordData.newPassword;
-    user.version = user.version++;
+    user.version = user.version + 1;
     user.updatedAt = Number(new Date());
     const response = { ...user };
     delete response.password;
