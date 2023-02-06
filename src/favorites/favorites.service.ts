@@ -58,11 +58,7 @@ export class FavoritesService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    // const isTrack = this.favorites.tracks.filter((item) => item.id === id);
 
-    // if (!isTrack.length) {
-    //   throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
-    // }
     this.favorites.tracks = this.favorites.tracks.filter(
       (item) => item.id !== id,
     );
@@ -94,11 +90,6 @@ export class FavoritesService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    // const isAlbum = this.favorites.albums.filter((item) => item.id === id);
-
-    // if (!isAlbum.length) {
-    //   throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
-    // }
     this.favorites.albums = this.favorites.albums.filter(
       (item) => item.id !== id,
     );
@@ -132,11 +123,6 @@ export class FavoritesService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    // const isArtist = this.favorites.artists.filter((item) => item.id === id);
-
-    // if (!isArtist.length) {
-    //   throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
-    // }
     this.favorites.artists = this.favorites.artists.filter(
       (item) => item.id !== id,
     );

@@ -21,6 +21,14 @@ export class TracksService {
     private readonly favorites: FavoritesService,
   ) {}
 
+  findTrackByID(id: string) {
+    const isTrack = this.tracksDB.filter((item) => item.id === id);
+    if (!isTrack.length) {
+      throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
+    }
+    return isTrack[0];
+  }
+
   getAllTracks() {
     return this.tracksDB;
   }
@@ -32,11 +40,7 @@ export class TracksService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const isTrack = this.tracksDB.filter((item) => item.id === id);
-    if (!isTrack.length) {
-      throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
-    }
-    return isTrack[0];
+    return this.findTrackByID(id);
   }
 
   createTrack(createTrackDto: CreateTrackDto) {
@@ -71,11 +75,7 @@ export class TracksService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const isTrack = this.tracksDB.filter((item) => item.id === id);
-    if (!isTrack.length) {
-      throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
-    }
-    const track = isTrack[0];
+    const track = this.findTrackByID(id);
     track.name = updateTrackDto.name;
     track.artistId = updateTrackDto.artistId;
     track.albumId = updateTrackDto.albumId;
@@ -90,10 +90,7 @@ export class TracksService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const isTrack = this.tracksDB.filter((item) => item.id === id);
-    if (!isTrack.length) {
-      throw new HttpException('Track not found', HttpStatus.NOT_FOUND);
-    }
+    this.findTrackByID(id);
     this.favorites.deleteTrackFromFavorites(id);
     this.tracksDB = this.tracksDB.filter((item) => item.id !== id);
   }

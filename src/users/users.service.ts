@@ -9,6 +9,15 @@ import { User } from './user';
 export class UsersService {
   private usersDB: User[] = [];
 
+  findUserByID(id: string) {
+    const isUser = this.usersDB.filter((item) => item.id === id);
+    if (!isUser.length) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    delete isUser[0].password;
+    return isUser[0];
+  }
+
   async getAllUsers() {
     const response = [...this.usersDB];
     response.map((item) => {
@@ -24,17 +33,11 @@ export class UsersService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const isUser = this.usersDB.filter((item) => item.id === id);
-    if (!isUser.length) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-    delete isUser[0].password;
-    return isUser[0];
+    return this.findUserByID(id);
   }
 
   async createUser(createUserDto: CreateUserDto) {
-    const vaildeteRequest =
-      createUserDto.login === '' || createUserDto.password === '';
+    const vaildeteRequest = !createUserDto.login || !createUserDto.password;
     if (vaildeteRequest) {
       throw new HttpException(
         'Bad request. Miss required fields',
@@ -66,12 +69,8 @@ export class UsersService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const isUser = this.usersDB.filter((item) => item.id === id);
-    if (!isUser.length) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-    const user = isUser[0];
-    if (user.password !== passwordData.oldPassword) {
+    const user = this.findUserByID(id);
+    if (user.password != passwordData.oldPassword) {
       throw new HttpException('oldPassowrd is wrong', HttpStatus.FORBIDDEN);
     }
     user.password = passwordData.newPassword;
@@ -89,10 +88,7 @@ export class UsersService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const isUser = this.usersDB.filter((item) => item.id === id);
-    if (!isUser.length) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
+    this.findUserByID(id);
     this.usersDB = this.usersDB.filter((item) => item.id !== id);
   }
 }

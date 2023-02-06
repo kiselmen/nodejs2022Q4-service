@@ -27,6 +27,14 @@ export class ArtistsService {
     private readonly favorites: FavoritesService,
   ) {}
 
+  findArtistByID(id: string) {
+    const isArtist = this.artistsDB.filter((item) => item.id === id);
+    if (!isArtist.length) {
+      throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
+    }
+    return isArtist[0];
+  }
+
   getAllArtists() {
     return this.artistsDB;
   }
@@ -38,11 +46,7 @@ export class ArtistsService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const isArtist = this.artistsDB.filter((item) => item.id === id);
-    if (!isArtist.length) {
-      throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
-    }
-    return isArtist[0];
+    return this.findArtistByID(id);
   }
 
   createArtist(createArtistDto: CreateArtistDto) {
@@ -71,11 +75,7 @@ export class ArtistsService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const isArtist = this.artistsDB.filter((item) => item.id === id);
-    if (!isArtist.length) {
-      throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
-    }
-    const artist = isArtist[0];
+    const artist = this.findArtistByID(id);
     artist.name = updateArtistDto.name;
     artist.grammy = updateArtistDto.grammy;
     return artist;
@@ -88,10 +88,7 @@ export class ArtistsService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const artist = this.artistsDB.filter((item) => item.id === id);
-    if (!artist.length) {
-      throw new HttpException('Artist not found', HttpStatus.NOT_FOUND);
-    }
+    this.findArtistByID(id);
     this.favorites.deleteArtistFromFavorites(id);
     this.artistsDB = this.artistsDB.filter((item) => item.id !== id);
     this.tracks.updateTracksArtist(id);

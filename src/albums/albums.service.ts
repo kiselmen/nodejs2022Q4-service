@@ -12,6 +12,7 @@ import { v4 as idv4 } from 'uuid';
 import { validate as idValidate } from 'uuid';
 import { TracksService } from 'src/tracks/tracks.service';
 import { FavoritesService } from 'src/favorites/favorites.service';
+import { UrlWithStringQuery } from 'url';
 
 @Injectable()
 export class AlbumsService {
@@ -24,6 +25,14 @@ export class AlbumsService {
     private readonly favorites: FavoritesService,
   ) {}
 
+  findAlbumByID(id: string) {
+    const isAlbum = this.albumsDB.filter((item) => item.id === id);
+    if (!isAlbum.length) {
+      throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
+    }
+    return isAlbum[0];
+  }
+
   getAllAlbums() {
     return this.albumsDB;
   }
@@ -35,11 +44,7 @@ export class AlbumsService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const isAlbum = this.albumsDB.filter((item) => item.id === id);
-    if (!isAlbum.length) {
-      throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
-    }
-    return isAlbum[0];
+    return this.findAlbumByID(id);
   }
 
   createAlbum(createAlbumDto: CreateAlbumDto) {
@@ -73,17 +78,13 @@ export class AlbumsService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const isAlbum = this.albumsDB.filter((item) => item.id === id);
-    if (!isAlbum.length) {
-      throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
-    }
+    const album = this.findAlbumByID(id);
     if (!idValidate(updateAlbumDto.artistId)) {
       throw new HttpException(
         'Bad request. Invalid artistId (not uuid)',
         HttpStatus.BAD_REQUEST,
       );
     }
-    const album = isAlbum[0];
     album.name = updateAlbumDto.name;
     album.year = updateAlbumDto.year;
     album.artistId = updateAlbumDto.artistId;
@@ -97,10 +98,7 @@ export class AlbumsService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    const isAlbum = this.albumsDB.filter((item) => item.id === id);
-    if (!isAlbum.length) {
-      throw new HttpException('Album not found', HttpStatus.NOT_FOUND);
-    }
+    this.findAlbumByID(id);
     this.favorites.deleteAlbumFromFavorites(id);
     this.albumsDB = this.albumsDB.filter((item) => item.id !== id);
     this.tracks.updateTracksAlbum(id);
