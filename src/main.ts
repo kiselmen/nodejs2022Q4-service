@@ -22,7 +22,7 @@ async function bootstrap() {
   fs.writeFileSync('./doc/api.yaml', yamlString, {
     encoding: 'utf-8',
   });
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('doc', app, document);
 
   await app.listen(port);
 }

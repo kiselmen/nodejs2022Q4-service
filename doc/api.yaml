@@ -496,7 +496,7 @@ info:
   contact: {}
 tags: []
 servers:
-  - url: http://localhost:4005
+  - url: http://localhost:4000
 components:
   schemas:
     User:

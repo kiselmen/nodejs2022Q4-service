@@ -14,7 +14,7 @@ export class UsersService {
     if (!isUser.length) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
-    delete isUser[0].password;
+    // delete isUser[0].password;
     return isUser[0];
   }
 
@@ -33,7 +33,9 @@ export class UsersService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    return this.findUserByID(id);
+    const user = this.findUserByID(id);
+    delete user.password;
+    return user;
   }
 
   async createUser(createUserDto: CreateUserDto) {
@@ -70,7 +72,7 @@ export class UsersService {
       );
     }
     const user = this.findUserByID(id);
-    if (user.password != passwordData.oldPassword) {
+    if (user.password !== passwordData.oldPassword) {
       throw new HttpException('oldPassowrd is wrong', HttpStatus.FORBIDDEN);
     }
     user.password = passwordData.newPassword;
